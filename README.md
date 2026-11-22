@@ -20,12 +20,12 @@ You need Apple's command line tools for the Swift compiler. If you don't have th
 Re-run the installer with new values. This doesn't rebuild anything, so the permission stays.
 
 ```sh
-SPEED=17 SMOOTH=0.15 ./install.sh
+SPEED=9 SMOOTH=0.15 ./install.sh
 ```
 
 | Setting | Default | What it does |
 |---|---|---|
-| `SPEED` | `17` | Pixels scrolled per wheel notch. Higher is faster. |
+| `SPEED` | `9` | Pixels scrolled per wheel notch. Higher is faster. |
 | `SMOOTH` | `0.15` | How long each glide lasts, in seconds. `0.08` is snappy, `0.25` is floaty. |
 
 Fast spins still scroll further than slow clicks, because macOS's own wheel acceleration is kept.
@@ -46,15 +46,15 @@ smoothscroll installs an event tap that watches scroll events. For every wheel n
 
 Trackpad and Magic Mouse scrolling is left alone. Those events always carry a gesture or momentum phase, while wheel notches never do. Scrolls with Shift, ⌘, Ctrl or Option held also pass through untouched, so shortcuts like ⌘-scroll zoom and Shift-scroll keep working.
 
-### Why 17 px per notch?
+### Why 9 px per notch?
 
-The default is set so a wheel moves the page about as far as a trackpad does for the same finger movement:
+The starting point was to make a wheel move the page about as far as a trackpad does for the same finger movement:
 
 - **Trackpad:** a slow two-finger swipe on a 13" MacBook Pro scrolled about 362 points over about 68 mm of finger travel, so about **5.3 points per mm**.
 - **Wheel:** a wheel about 24 mm across with 24 notches per turn moves your fingertip π × 24 ÷ 24 ≈ **3.14 mm per notch**.
 - **Result:** 5.3 × 3.14 ≈ **17 px per notch**.
 
-Your trackpad, wheel and taste will differ, so treat 17 as a starting point.
+That exact match turned out to feel too fast on a wheel, so the default is about half of it: **9 px**. Your trackpad, wheel and taste will differ, so tune `SPEED` to suit.
 
 ## Footprint
 
