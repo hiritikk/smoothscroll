@@ -5,24 +5,28 @@
 // so a wheel glides like a trackpad. Trackpad / Magic Mouse events (already
 // continuous) pass through untouched, as do scrolls with Shift/Cmd/Ctrl/Option held.
 //
-// Usage: smoothscroll [--speed PX_PER_LINE] [--smooth SECONDS]
+// Usage: smoothscroll [--speed PX_PER_LINE] [--smooth SECONDS] [--debug]
 //   --speed   pixels scrolled per wheel line (default 40). Higher = faster.
 //   --smooth  easing time constant in seconds (default 0.12). Higher = longer glide.
+//   --debug   log every incoming scroll event's fields.
 
 import ApplicationServices
 import Foundation
 
 var pixelsPerLine = 40.0
 var timeConstant = 0.12
+var debug = false
+setvbuf(stdout, nil, _IOLBF, 0)  // line-buffer so the launchd log updates immediately
 
 do {
     var args = CommandLine.arguments.dropFirst().makeIterator()
     while let a = args.next() {
         switch a {
+        case "--debug": debug = true
         case "--speed": if let v = args.next().flatMap(Double.init) { pixelsPerLine = v }
         case "--smooth": if let v = args.next().flatMap(Double.init) { timeConstant = max(v, 0.01) }
         case "-h", "--help":
-            print("usage: smoothscroll [--speed PX_PER_LINE] [--smooth SECONDS]")
+            print("usage: smoothscroll [--speed PX_PER_LINE] [--smooth SECONDS] [--debug]")
             exit(0)
         default:
             FileHandle.standardError.write("unknown argument: \(a)\n".data(using: .utf8)!)
@@ -97,6 +101,16 @@ let callback: CGEventTapCallBack = { _, type, event, _ in
         if let tap { CGEvent.tapEnable(tap: tap, enable: true) }
         return Unmanaged.passUnretained(event)
     }
+    if debug, type == .scrollWheel, event.getIntegerValueField(.eventSourceUserData) != kMagic {
+        print("scroll continuous=\(event.getIntegerValueField(.scrollWheelEventIsContinuous))",
+              "line=\(event.getIntegerValueField(.scrollWheelEventDeltaAxis1))",
+              "fixed=\(event.getDoubleValueField(.scrollWheelEventFixedPtDeltaAxis1))",
+              "point=\(event.getIntegerValueField(.scrollWheelEventPointDeltaAxis1))",
+              "phase=\(event.getIntegerValueField(.scrollWheelEventScrollPhase))",
+              "momentum=\(event.getIntegerValueField(.scrollWheelEventMomentumPhase))",
+              "srcpid=\(event.getIntegerValueField(.eventSourceUnixProcessID))",
+              "flags=\(event.flags.rawValue)")
+    }
     guard type == .scrollWheel,
           event.getIntegerValueField(.eventSourceUserData) != kMagic,
           event.getIntegerValueField(.scrollWheelEventIsContinuous) == 0,
@@ -107,6 +121,7 @@ let callback: CGEventTapCallBack = { _, type, event, _ in
     let dx = event.getDoubleValueField(.scrollWheelEventFixedPtDeltaAxis2)
     if dy == 0 && dx == 0 { return Unmanaged.passUnretained(event) }
 
+    if debug { print("  -> smoothed") }
     smoother.add(dy: dy * pixelsPerLine, dx: dx * pixelsPerLine)
     return nil  // swallow the original notched event
 }

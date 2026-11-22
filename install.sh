@@ -30,6 +30,7 @@ cat > "$PLIST" <<EOF
     <string>$BIN</string>
     <string>--speed</string><string>$SPEED</string>
     <string>--smooth</string><string>$SMOOTH</string>
+    ${DEBUG:+<string>--debug</string>}
   </array>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><dict><key>SuccessfulExit</key><false/></dict>
