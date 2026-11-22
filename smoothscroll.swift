@@ -129,15 +129,17 @@ let callback: CGEventTapCallBack = { _, type, event, _ in
     return nil  // swallow the original notched event
 }
 
-// An active event tap needs Accessibility permission. Ask once, then wait for it.
+// An active event tap needs Accessibility permission. A running process doesn't see a
+// grant made after it started, so exit and let launchd relaunch us (every ~10s) instead.
 let promptKey = "AXTrustedCheckOptionPrompt" as CFString
 if !AXIsProcessTrustedWithOptions([promptKey: true] as CFDictionary) {
     FileHandle.standardError.write("""
-        smoothscroll: waiting for Accessibility permission.
+        smoothscroll: no Accessibility permission yet; will retry.
         Enable it in System Settings > Privacy & Security > Accessibility for:
         \(CommandLine.arguments[0])\n
         """.data(using: .utf8)!)
-    while !AXIsProcessTrusted() { sleep(2) }
+    sleep(10)
+    exit(1)
 }
 
 let mask = CGEventMask(1 << CGEventType.scrollWheel.rawValue)
