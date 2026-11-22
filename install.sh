@@ -3,8 +3,8 @@
 # Tune by editing SPEED / SMOOTH below and re-running this script.
 set -euo pipefail
 
-SPEED=${SPEED:-40}      # pixels per wheel line (higher = faster)
-SMOOTH=${SMOOTH:-0.12}  # glide time constant in seconds (higher = longer glide)
+SPEED=${SPEED:-17}      # px per wheel notch; 17 ≈ trackpad gain (5.3 pt/mm) × 3.14 mm finger travel per notch
+SMOOTH=${SMOOTH:-0.15}  # glide time constant in seconds (higher = longer glide)
 
 LABEL=local.smoothscroll
 BIN="$HOME/.local/bin/smoothscroll"

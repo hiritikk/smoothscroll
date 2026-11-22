@@ -6,15 +6,15 @@
 // momentum phase) pass through untouched, as do scrolls with Shift/Cmd/Ctrl/Option held.
 //
 // Usage: smoothscroll [--speed PX_PER_LINE] [--smooth SECONDS] [--debug]
-//   --speed   pixels scrolled per wheel line (default 40). Higher = faster.
-//   --smooth  easing time constant in seconds (default 0.12). Higher = longer glide.
+//   --speed   pixels scrolled per wheel notch (default 17). Higher = faster.
+//   --smooth  easing time constant in seconds (default 0.15). Higher = longer glide.
 //   --debug   log every incoming scroll event's fields.
 
 import ApplicationServices
 import Foundation
 
-var pixelsPerLine = 40.0
-var timeConstant = 0.12
+var pixelsPerLine = 17.0
+var timeConstant = 0.15
 var debug = false
 setvbuf(stdout, nil, _IOLBF, 0)  // line-buffer so the launchd log updates immediately
 
