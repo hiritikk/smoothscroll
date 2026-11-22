@@ -12,8 +12,12 @@ PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 DIR=${0:A:h}
 
 mkdir -p "$HOME/.local/bin" "$HOME/Library/LaunchAgents"
-swiftc -O "$DIR/smoothscroll.swift" -o "$BIN"
-codesign -s - -f -i "$LABEL" "$BIN" 2>/dev/null
+# Only rebuild when the source changed: a new binary loses its Accessibility grant.
+if [[ ! -x "$BIN" || "$DIR/smoothscroll.swift" -nt "$BIN" ]]; then
+  swiftc -O "$DIR/smoothscroll.swift" -o "$BIN"
+  codesign -s - -f -i "$LABEL" "$BIN" 2>/dev/null
+  echo "Rebuilt $BIN: re-enable it in Privacy & Security > Accessibility"
+fi
 
 cat > "$PLIST" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
