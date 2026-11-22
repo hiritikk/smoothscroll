@@ -1,9 +1,9 @@
 // smoothscroll: headless smooth scrolling for mouse wheels on macOS.
 //
-// Intercepts discrete (notched) mouse-wheel events, swallows them, and replays
-// the distance as a stream of small pixel-scroll events with exponential easing,
-// so a wheel glides like a trackpad. Trackpad / Magic Mouse events (already
-// continuous) pass through untouched, as do scrolls with Shift/Cmd/Ctrl/Option held.
+// Intercepts notched mouse-wheel events, swallows them, and replays the distance
+// as a stream of small pixel-scroll events with exponential easing, so a wheel
+// glides like a trackpad. Trackpad / Magic Mouse gestures (which carry a scroll or
+// momentum phase) pass through untouched, as do scrolls with Shift/Cmd/Ctrl/Option held.
 //
 // Usage: smoothscroll [--speed PX_PER_LINE] [--smooth SECONDS] [--debug]
 //   --speed   pixels scrolled per wheel line (default 40). Higher = faster.
@@ -113,7 +113,10 @@ let callback: CGEventTapCallBack = { _, type, event, _ in
     }
     guard type == .scrollWheel,
           event.getIntegerValueField(.eventSourceUserData) != kMagic,
-          event.getIntegerValueField(.scrollWheelEventIsContinuous) == 0,
+          // Trackpads and Magic Mouse always report a gesture/momentum phase. Wheel notches
+          // don't, even when Logi Options+ re-posts them flagged as continuous.
+          event.getIntegerValueField(.scrollWheelEventScrollPhase) == 0,
+          event.getIntegerValueField(.scrollWheelEventMomentumPhase) == 0,
           event.flags.intersection(passThroughModifiers).isEmpty
     else { return Unmanaged.passUnretained(event) }
 
