@@ -12,11 +12,21 @@ PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 DIR=${0:A:h}
 
 mkdir -p "$HOME/.local/bin" "$HOME/Library/LaunchAgents"
-# Only rebuild when the source changed: a new binary loses its Accessibility grant.
+# Signing with a real certificate (e.g. the free "Apple Development" one Xcode creates)
+# keeps the Accessibility grant across rebuilds. Override with CODESIGN_ID=<hash or name>.
+# Without one we fall back to ad-hoc signing, which must be re-granted after each rebuild.
+CODESIGN_ID=${CODESIGN_ID:-$(security find-identity -v -p codesigning 2>/dev/null \
+  | grep -v CSSMERR | awk '/"(Apple Development|Developer ID Application)/ { print $2; exit }')}
+
+# Only rebuild when the source changed.
 if [[ ! -x "$BIN" || "$DIR/smoothscroll.swift" -nt "$BIN" ]]; then
   swiftc -O "$DIR/smoothscroll.swift" -o "$BIN"
-  codesign -s - -f -i "$LABEL" "$BIN" 2>/dev/null
-  echo "Rebuilt $BIN: re-enable it in Privacy & Security > Accessibility"
+  if [[ -n "$CODESIGN_ID" ]] && codesign -s "$CODESIGN_ID" -f -i "$LABEL" "$BIN" 2>/dev/null; then
+    echo "Rebuilt $BIN (signed with your development certificate)"
+  else
+    codesign -s - -f -i "$LABEL" "$BIN"
+    echo "Rebuilt $BIN (ad-hoc signed: re-enable it in Privacy & Security > Accessibility)"
+  fi
 fi
 
 cat > "$PLIST" <<EOF
