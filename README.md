@@ -36,13 +36,13 @@ smoothscroll installs an event tap that watches scroll events. For every wheel n
 
 1. Swallows the original event, so the page doesn't jump.
 2. Adds the notch's distance (`lines × SPEED`) to a "still to scroll" amount.
-3. On a 120 Hz timer, posts a small pixel scroll that covers part of the remaining distance:
+3. Once per display frame, posts a small pixel scroll that covers part of the remaining distance. The frame rate comes from the screen under the cursor, so a 60 Hz monitor gets 60 steps a second and a 120 Hz ProMotion display gets 120.
 
    ```
    step = remaining × (1 − e^(−dt / SMOOTH))
    ```
 
-   That's exponential easing. The page starts fast and settles gently, the way a trackpad scroll does. The timer only runs while a glide is in progress.
+   That's exponential easing. The page starts fast and settles gently, the way a trackpad scroll does. Because each step uses the real time since the last one (`dt`), a glide feels the same at any refresh rate. The timer only runs while a glide is in progress.
 
 Trackpad and Magic Mouse scrolling is left alone. Those events always carry a gesture or momentum phase, while wheel notches never do. Scrolls with Shift, ⌘, Ctrl or Option held also pass through untouched, so shortcuts like ⌘-scroll zoom and Shift-scroll keep working.
 

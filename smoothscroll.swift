@@ -51,10 +51,23 @@ final class Smoother {
         remX += dx
         if timer == nil {
             lastTick = CFAbsoluteTimeGetCurrent()
-            let t = Timer(timeInterval: 1.0 / 120.0, repeats: true) { [weak self] _ in self?.tick() }
+            let t = Timer(timeInterval: frameInterval(), repeats: true) { [weak self] _ in self?.tick() }
             RunLoop.main.add(t, forMode: .common)
             timer = t
         }
+    }
+
+    /// One frame of the display under the cursor (60 Hz, 120 Hz ProMotion, ...), so each
+    /// glide posts one scroll step per frame instead of more steps than the screen can show.
+    private func frameInterval() -> Double {
+        var display = CGMainDisplayID()
+        var count: UInt32 = 0
+        if let cursor = CGEvent(source: nil)?.location {
+            var hit: CGDirectDisplayID = 0
+            if CGGetDisplaysWithPoint(cursor, 1, &hit, &count) == .success, count > 0 { display = hit }
+        }
+        let hz = CGDisplayCopyDisplayMode(display)?.refreshRate ?? 0
+        return 1.0 / (hz > 0 ? hz : 60)
     }
 
     private func tick() {
