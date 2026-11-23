@@ -1,0 +1,38 @@
+name: Bug report
+description: Scrolling isn't smooth, or something else is broken
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did you get instead?
+    validations:
+      required: true
+  - type: input
+    id: mouse
+    attributes:
+      label: Mouse
+      placeholder: e.g. Logitech MX Master 3S
+    validations:
+      required: true
+  - type: input
+    id: software
+    attributes:
+      label: Mouse software
+      description: Logi Options+, SteerMouse, Mos, none, etc.
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: e.g. macOS 26.1 Tahoe, Apple Silicon
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Debug log
+      description: Run `DEBUG=1 ./install.sh`, scroll a few clicks, then paste the last 30 or so lines of `~/Library/Logs/smoothscroll.log`. Run `./install.sh` afterwards to turn logging off.
+      render: text
